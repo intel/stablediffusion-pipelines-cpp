@@ -40,3 +40,50 @@ Here are some of the dependencies that you need to grab, and a quick description
     :: (Optional): Install built DLL's & headers into a custom directory
     ::  Usually only used if you want to then use this in another project.
     cmake --install . --config Release --prefix <path_to>/installed
+
+## (Optional): Run txt-to-image pipeline using int8 quantized models
+
+    :: Clone sd-1.5-square-quantized hugging face space
+    git lfs install
+    git clone https://huggingface.co/Intel/sd-1.5-square-quantized
+
+    :: copy the text_encoder, vae_decoder, vae_encoder .xml/.bin files into INT8 sub-directory
+    cd sd-1.5-square-quantized
+    copy /y *.xml INT8
+    copy /y *.bin INT8
+    cd ..
+
+    :: Time to run the txt-to-image example. 
+
+    :: Start by going to the folder containing 'txt_to_img.exe' that you previously built.
+    cd C:\path\to\stablediffusion-pipelines-cpp-build\intel64\Release
+
+    :: Here is the usage of txt_to_img.exe (this can be printed using txt_to_img.exe --help):
+    txt_to_image_interpolate usage:
+    --prompt="some positive prompt"
+    --negative_prompt="some negative prompt"
+    --seed=12345
+    --guidance_scale=8.0
+    --num_inference_steps=20
+    --model_dir="C:\Path\To\Some\Model_Dir"
+    --text_encoder_device=CPU
+    --unet_positive_device=CPU
+    --unet_negative_device=CPU
+    --vae_decoder_device=CPU
+    --scheduler=["EulerDiscreteScheduler", "PNDMScheduler", "USTMScheduler"]
+    --input_image=C:\SomePath\img.png
+    --strength=0.75
+
+    :: For --model_dir parameter, we will use the 'sd-1.5-square-quantized\INT8' folder that we prepped above.
+    :: Let's run a simple example, keeping most parameters at default -- which will run all models on CPU.
+    txt_to_img.exe --model_dir="C:\Path\To\sd-1.5-square-quantized\INT8" --prompt="photo of an astronaut riding a horse on mars"
+
+    :: After generating an image, it will be displayed within a window. To generate another image using the same configuration,
+    ::  click on the window and press 'c'. Otherwise if you want to quit, press 'q'.
+
+    :: Here is a more advanced example, which makes use of negative prompt, as well as taking advantage of all accelerators -- CPU, GPU, and NPU (available on Intel Core Ultra):
+    txt_to_img.exe --model_dir="C:\Path\To\sd-1.5-square-quantized\INT8"  --prompt="professional photo of astronaut riding a horse on the moon" --negative_prompt="lowres, bad quality, monochrome" --text_encoder_device=CPU --unet_positive_device=NPU --unet_negative_device=GPU --vae_decoder_device=GPU
+
+    
+    
+    
