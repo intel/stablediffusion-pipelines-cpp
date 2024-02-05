@@ -66,11 +66,8 @@ namespace cpp_stable_diffusion_ov
         std::string vae_encoder_model_name = model_folder + OS_SEP + "vae_encoder.xml";
 
 
-        if (model_folder.find("int8") != std::string::npos)
+        if ((model_folder.find("int8") != std::string::npos) || (model_folder.find("INT8") != std::string::npos))
         {
-            text_encoder_model_name = model_folder + OS_SEP + "text_encoder_fp16.xml";
-            vae_decoder_model_name = model_folder + OS_SEP + "vae_decoder_fp16.xml";
-
             if (!_unet_loop || !_unet_positive_device || !_unet_negative_device || (*_unet_positive_device != unet_positive_device) ||
                 (*_unet_negative_device != unet_negative_device))
             {

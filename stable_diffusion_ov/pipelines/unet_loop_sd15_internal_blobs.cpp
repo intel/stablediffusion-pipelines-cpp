@@ -29,9 +29,9 @@ namespace cpp_stable_diffusion_ov
 
         {
             //std::string unet_version = "unet_int8_sq_0.15_tp_input";
-            std::string unet_version = "unet_int8_sq_0.15_sym_tp_input";
+            std::string unet_version = "unet_int8";
             std::string model_xml_path = model_dir + OS_SEP + unet_version + ".xml";
-            std::string model_blob_path = model_dir + OS_SEP + unet_version + ".blob";
+            std::string model_blob_path = model_dir + OS_SEP + unet_version + "_NPU.blob";
 
             std::cout << "unet_version" << unet_version << std::endl;
 
