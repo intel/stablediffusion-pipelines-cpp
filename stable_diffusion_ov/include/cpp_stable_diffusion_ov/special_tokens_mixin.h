@@ -10,6 +10,7 @@
 #include <optional>
 #include <stdexcept>
 #include <iostream>
+#include <cstdint>
 #include "cpp_stable_diffusion_ov/visibility.h"
 
 namespace cpp_stable_diffusion_ov

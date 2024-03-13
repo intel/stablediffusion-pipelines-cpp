@@ -1,6 +1,9 @@
 // Copyright(C) 2023 Intel Corporation
 // SPDX - License - Identifier: Apache - 2.0
 #pragma once
+
+#include <cstdint>
+
 namespace cpp_stable_diffusion_ov
 {
 static const size_t TOTAL_CLIP_VOCAB_PAIRS = 49408;

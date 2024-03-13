@@ -4,6 +4,7 @@
 #include <mutex>
 #include <optional>
 #include <memory>
+#include <string>
 #include "cpp_stable_diffusion_ov/visibility.h"
 
 namespace cpp_stable_diffusion_ov
