@@ -18,6 +18,7 @@ void print_usage()
     std::cout << "--guidance_scale=8.0 " << std::endl;
     std::cout << "--num_inference_steps=20 " << std::endl;
     std::cout << "--model_dir=\"C:\\Path\\To\\Some\\Model_Dir\" " << std::endl;
+    std::cout << "--unet_subdir=\"INT8\" or \"FP16\"" << std::endl;
     std::cout << "--text_encoder_device=CPU" << std::endl;
     std::cout << "--unet_positive_device=CPU" << std::endl;
     std::cout << "--unet_negative_device=CPU" << std::endl;
@@ -68,6 +69,7 @@ int main(int argc, char* argv[])
         std::optional<std::string> negative_prompt;
         std::optional<std::string> seed_str;
         std::optional<std::string> model_dir;
+        std::optional<std::string> unet_subdir;
         std::optional<std::string> guidance_scale_str;
         std::optional<std::string> num_inference_steps_str;
 
@@ -89,6 +91,8 @@ int main(int argc, char* argv[])
         guidance_scale_str = cmdline_parser.get_value_for_key("guidance_scale");
         num_inference_steps_str = cmdline_parser.get_value_for_key("num_inference_steps");
         model_dir = cmdline_parser.get_value_for_key("model_dir");
+        unet_subdir = cmdline_parser.get_value_for_key("unet_subdir");
+
         text_encoder_device = cmdline_parser.get_value_for_key("text_encoder_device");
         unet_positive_device = cmdline_parser.get_value_for_key("unet_positive_device");
         unet_negative_device = cmdline_parser.get_value_for_key("unet_negative_device");
@@ -174,7 +178,7 @@ int main(int argc, char* argv[])
         using namespace std::chrono;
         using Clock = std::chrono::high_resolution_clock;
         uint64_t  t0 = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-        cpp_stable_diffusion_ov::StableDiffusionPipeline sd_pipeline(*model_dir, {},
+        cpp_stable_diffusion_ov::StableDiffusionPipeline sd_pipeline(*model_dir, unet_subdir, {},
             *text_encoder_device, *unet_positive_device, *unet_negative_device, *vae_decoder_device);
         uint64_t  t1 = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         std::cout << "Created StableDiffusionPipeline object in " << (double)(t1 - t0) / 1000.0 << " seconds." << std::endl;

@@ -26,7 +26,8 @@ namespace cpp_stable_diffusion_ov
         std::string vae_decoder_device,
         std::string vae_encoder_device)
     {
-        _stable_diffusion_pipeline = std::make_shared< StableDiffusionPipeline >(model_folder, cache_folder, text_encoder_device,
+        std::optional<std::string> subdir;
+        _stable_diffusion_pipeline = std::make_shared< StableDiffusionPipeline >(model_folder, subdir, cache_folder, text_encoder_device,
             unet_positive_device, unet_negative_device, vae_decoder_device, vae_encoder_device);
 
         _spec_img_converterL = std::make_shared < SpectrogramImageConverter >();

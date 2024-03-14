@@ -11,6 +11,7 @@ namespace cpp_stable_diffusion_ov
     public:
 
         StableDiffusionAudioInterpolationPipeline(std::string model_folder,
+            std::optional< std::string > unet_subdir,
             std::optional< std::string > cache = {},
             std::string text_encoder_device = "CPU",
             std::string unet_positive_device = "CPU",

@@ -1,4 +1,4 @@
-// Copyright(C) 2023 Intel Corporation
+// Copyright(C) 2024 Intel Corporation
 // SPDX - License - Identifier: Apache - 2.0
 #pragma once
 
@@ -10,15 +10,13 @@ namespace cpp_stable_diffusion_ov
 {
     class Scheduler;
 
-    //'Standard' Stable Diffusion UNet loop that splits inference for positive and negative prompts 
-    // (which adds the ability to run them across 2 separate devices)
-    class UNetLoopSplit : public UNetLoop
+    //'Standard' Stable Diffusion UNet loop that performs single inference for +/- prompts (batch2)
+    class UNetLoopBatch2 : public UNetLoop
     {
     public:
 
-        UNetLoopSplit(std::shared_ptr<ov::Model> unet_model,
-            std::string device_unet_positive_prompt,
-            std::string device_unet_negative_prompt,
+        UNetLoopBatch2(std::shared_ptr<ov::Model> unet_model,
+            std::string device,
             size_t max_tok_len, size_t img_width,
             size_t img_height,
             ov::Core &core);
@@ -37,11 +35,7 @@ namespace cpp_stable_diffusion_ov
 
         ov::Shape _sample_shape;
         ov::Shape _encoder_hidden_states_shape;
-        ov::InferRequest _infer_request[2];
-        std::string _device_unet_positive_prompt;
-        std::string _device_unet_negative_prompt;
-
-        void _run_unet_async(ov::Tensor latents, double timestep, ov::Tensor encoder_hidden_states, size_t infer_request_index);
-
+        ov::InferRequest _infer_request;
+        std::string _device;
     };
 }

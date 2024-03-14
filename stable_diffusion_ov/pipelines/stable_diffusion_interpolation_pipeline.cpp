@@ -14,13 +14,14 @@
 namespace cpp_stable_diffusion_ov
 {
     StableDiffusionInterpolationPipeline::StableDiffusionInterpolationPipeline(std::string model_folder,
+        std::optional< std::string > unet_subdir,
         std::optional< std::string > cache,
         std::string text_encoder_device,
         std::string unet_positive_device,
         std::string unet_negative_device,
         std::string vae_decoder_device,
         std::string vae_encoder_device)
-        : StableDiffusionPipeline(model_folder, cache, text_encoder_device, unet_positive_device,
+        : StableDiffusionPipeline(model_folder, unet_subdir, cache, text_encoder_device, unet_positive_device,
             unet_negative_device, vae_decoder_device, vae_encoder_device)
     {
 

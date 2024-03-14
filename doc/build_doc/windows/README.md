@@ -47,12 +47,6 @@ Here are some of the dependencies that you need to grab, and a quick description
     git lfs install
     git clone https://huggingface.co/Intel/sd-1.5-square-quantized
 
-    :: copy the text_encoder, vae_decoder, vae_encoder .xml/.bin files into INT8 sub-directory
-    cd sd-1.5-square-quantized
-    copy /y *.xml INT8
-    copy /y *.bin INT8
-    cd ..
-
     :: Time to run the txt-to-image example. 
 
     :: Start by going to the folder containing 'txt_to_img.exe' that you previously built.
@@ -66,6 +60,7 @@ Here are some of the dependencies that you need to grab, and a quick description
     --guidance_scale=8.0
     --num_inference_steps=20
     --model_dir="C:\Path\To\Some\Model_Dir"
+    --unet_subdir="INT8" or "FP16"
     --text_encoder_device=CPU
     --unet_positive_device=CPU
     --unet_negative_device=CPU
@@ -74,16 +69,20 @@ Here are some of the dependencies that you need to grab, and a quick description
     --input_image=C:\SomePath\img.png
     --strength=0.75
 
-    :: For --model_dir parameter, we will use the 'sd-1.5-square-quantized\INT8' folder that we prepped above.
-    :: Let's run a simple example, keeping most parameters at default -- which will run all models on CPU.
-    txt_to_img.exe --model_dir="C:\Path\To\sd-1.5-square-quantized\INT8" --prompt="photo of an astronaut riding a horse on mars"
+    :: For --model_dir parameter, we will use the 'sd-1.5-square-quantized\' folder that was created from
+    :: the git clone.
+    :: We add additional parameter of --unet_subdir=INT8 to specify that we want the unet mode in
+    :: C:\Path\To\sd-1.5-square-quantized\INT8 to be used.
+    txt_to_img.exe --model_dir="C:\Path\To\sd-1.5-square-quantized" --unet_subdir="INT8" --prompt="photo of an astronaut riding a horse on mars"
 
     :: After generating an image, it will be displayed within a window. To generate another image using the same configuration,
     ::  click on the window and press 'c'. Otherwise if you want to quit, press 'q'.
 
     :: Here is a more advanced example, which makes use of negative prompt, as well as taking advantage of all accelerators -- CPU, GPU, and NPU (available on Intel Core Ultra):
-    txt_to_img.exe --model_dir="C:\Path\To\sd-1.5-square-quantized\INT8"  --prompt="professional photo of astronaut riding a horse on the moon" --negative_prompt="lowres, bad quality, monochrome" --text_encoder_device=CPU --unet_positive_device=NPU --unet_negative_device=GPU --vae_decoder_device=GPU
+    txt_to_img.exe --model_dir="C:\Path\To\sd-1.5-square-quantized\"  --unet_subdir="INT8" --prompt="professional photo of astronaut riding a horse on the moon" --negative_prompt="lowres, bad quality, monochrome" --text_encoder_device=CPU --unet_positive_device=NPU --unet_negative_device=GPU --vae_decoder_device=GPU
 
-    
+    :: Here is an example that uses FP16 version of unet. Note that this model is batch2, so we can't split 
+    :: UNet across 2 different devices. So, we set both unet_positive_device / unet_negative_device parameters to GPU.
+    txt_to_img.exe --model_dir="C:\Path\To\sd-1.5-square-quantized\"  --unet_subdir="FP16" --prompt="professional photo of astronaut riding a horse on the moon" --negative_prompt="lowres, bad quality, monochrome" --text_encoder_device=CPU --unet_positive_device=GPU --unet_negative_device=GPU --vae_decoder_device=GPU
     
     

@@ -25,6 +25,7 @@
 namespace cpp_stable_diffusion_ov
 {
     StableDiffusionPipeline::StableDiffusionPipeline(std::string model_folder,
+        std::optional< std::string > unet_subdir,
         std::optional< std::string > cache,
         std::string text_encoder_device,
         std::string unet_positive_device,
@@ -50,7 +51,7 @@ namespace cpp_stable_diffusion_ov
             cache_dir = *cache;
         }
 
-        auto m = ModelCollateralCache::instance()->GetModelCollateral(model_folder, cache_dir, text_encoder_device, unet_positive_device,
+        auto m = ModelCollateralCache::instance()->GetModelCollateral(model_folder, unet_subdir, cache_dir, text_encoder_device, unet_positive_device,
             unet_negative_device, vae_decoder_device, vae_encoder_device);
 
         _unet_loop = m.unet_loop;

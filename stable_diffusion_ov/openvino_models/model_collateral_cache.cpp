@@ -5,9 +5,11 @@
 #include "cpp_stable_diffusion_ov/openvino_text_encoder.h"
 #include "pipelines/unet_loop.h"
 #include "pipelines/unet_loop_split.h"
+#include "pipelines/unet_loop_batch2.h"
 #include "pipelines/unet_loop_sd15_internal_blobs.h"
 #include "cpp_stable_diffusion_ov/openvino_vae_decoder.h"
 #include "cpp_stable_diffusion_ov/openvino_vae_encoder.h"
+#include "cpp_stable_diffusion_ov/openvino_model_utils.h"
 
 #ifdef WIN32
 #define OS_SEP "\\"
@@ -33,6 +35,7 @@ namespace cpp_stable_diffusion_ov
     }
 
     ModelCollateralCache::ModelCollateral ModelCollateralCache::GetModelCollateral(std::string model_folder,
+        std::optional<std::string> unet_sub_dir,
         std::optional<std::string> cache_dir,
         std::string text_encoder_device,
         std::string unet_positive_device,
@@ -65,50 +68,71 @@ namespace cpp_stable_diffusion_ov
         std::string vae_decoder_model_name = model_folder + OS_SEP + "vae_decoder.xml";
         std::string vae_encoder_model_name = model_folder + OS_SEP + "vae_encoder.xml";
 
-
-        if ((model_folder.find("int8") != std::string::npos) || (model_folder.find("INT8") != std::string::npos))
+        //if the unet loop isn't set, or it's set but either unet+ / unet- devices have changed.
+        if (!_unet_loop || !_unet_positive_device || !_unet_negative_device || (*_unet_positive_device != unet_positive_device) ||
+            (*_unet_negative_device != unet_negative_device))
         {
-            if (!_unet_loop || !_unet_positive_device || !_unet_negative_device || (*_unet_positive_device != unet_positive_device) ||
-                (*_unet_negative_device != unet_negative_device))
+            std::string unet_model_folder = model_folder;
+            if (unet_sub_dir)
+            {
+                unet_model_folder = unet_model_folder + OS_SEP + *unet_sub_dir;
+            }
+
+            if ((unet_model_folder.find("int8") != std::string::npos) || (unet_model_folder.find("INT8") != std::string::npos))
             {
                 std::cout << "Creating new int8 unet loop with +/- devices as: " << unet_positive_device << ", " << unet_negative_device << std::endl;
-                _unet_loop = std::make_shared< UNetLoopSD15InternalBlobs >(model_folder,
+                _unet_loop = std::make_shared< UNetLoopSD15InternalBlobs >(unet_model_folder,
                     unet_positive_device,
                     unet_negative_device,
                     tok_max_length,
                     512,
                     512,
                     core);
-
-                _unet_positive_device = unet_positive_device;
-                _unet_negative_device = unet_negative_device;
             }
             else
             {
-                std::cout << "Using cached int8 unet loop with +/- devices as:" << unet_positive_device << ", " << unet_negative_device << std::endl;
-            }
-        }
-        else
-        {
-            std::cout << "xml version" << std::endl;
-            if (!_unet_loop || !_unet_positive_device || !_unet_negative_device || (*_unet_positive_device != unet_positive_device) ||
-                (*_unet_negative_device != _unet_negative_device))
-            {
-                std::cout << "Creating new fp16 unet loop with +/- devices as:" << unet_positive_device << ", " << unet_negative_device << std::endl;
+                auto model = core.read_model(unet_model_folder + OS_SEP + "unet.xml");
 
-                _unet_loop = std::make_shared< UNetLoopSplit >(model_folder + OS_SEP + "unet.xml",
-                    unet_positive_device,
-                    unet_negative_device,
-                    77,
-                    512,
-                    512,
-                    core);
+                logBasicModelInfo(model);
+
+                auto latent_model_input_batch_size = model->input("latent_model_input").get_shape()[0];
+                if (latent_model_input_batch_size == 2)
+                {
+                    if (unet_positive_device != unet_negative_device)
+                    {
+                        std::cout << "Warning! Batch2 model is being used, so we can't split across two separate devices. Will use single device = " << unet_positive_device << std::endl;
+                    }
+
+                    std::cout << "Creating new fp16 batch2 unet loop with device as:" << unet_positive_device <<  std::endl;
+
+                    _unet_loop = std::make_shared< UNetLoopBatch2 >(model,
+                        unet_positive_device,
+                        tok_max_length,
+                        512,
+                        512,
+                        core);
+                }
+                else if(latent_model_input_batch_size == 1)
+                {
+                    std::cout << "Creating new fp16 split unet loop with +/- devices as:" << unet_positive_device << ", " << unet_negative_device << std::endl;
+                    _unet_loop = std::make_shared< UNetLoopSplit >(model,
+                        unet_positive_device,
+                        unet_negative_device,
+                        tok_max_length,
+                        512,
+                        512,
+                        core);
+                }
+                else
+                {
+                    throw std::runtime_error("Expected unet model to have batch size 1 or 2, but it has batch size of " + std::to_string(latent_model_input_batch_size));
+                }
             }
-            else
-            {
-                std::cout << "Using cached fp16 unet loop with +/- devices as:" << unet_positive_device << ", " << unet_negative_device << std::endl;
-            }
+
+            _unet_positive_device = unet_positive_device;
+            _unet_negative_device = unet_negative_device;
         }
+
 
         if (!_text_encoder || !_txt_encoder_device || (*_txt_encoder_device != text_encoder_device))
         {

@@ -36,6 +36,7 @@ namespace cpp_stable_diffusion_ov
         }
 
         ModelCollateral GetModelCollateral(std::string model_folder,
+            std::optional<std::string> unet_sub_dir,
             std::optional<std::string> cache_dir,
             std::string text_encoder_device,
             std::string unet_positive_device,
