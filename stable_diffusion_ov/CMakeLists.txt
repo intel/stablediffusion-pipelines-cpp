@@ -26,6 +26,7 @@ set( STABLE_DIFFUSION_OV_PRIVATE_HEADERS
 	pipelines/unet_loop.h
 	pipelines/unet_loop_split.h
 	pipelines/unet_loop_sd15_internal_blobs.h
+	pipelines/unet_loop_batch2.h
 	schedulers/scheduler.h
 	schedulers/pndm_scheduler.h
 	schedulers/ustm_scheduler.h
@@ -52,6 +53,7 @@ set( STABLE_DIFFUSION_OV_SOURCES
 	pipelines/stable_diffusion_interpolation_pipeline.cpp
 	pipelines/unet_loop_split.cpp
 	pipelines/unet_loop_sd15_internal_blobs.cpp
+	pipelines/unet_loop_batch2.cpp
 	schedulers/pndm_scheduler.cpp
 	schedulers/ustm_scheduler.cpp
 	schedulers/euler_discrete_scheduler.cpp

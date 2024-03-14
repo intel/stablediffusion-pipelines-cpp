@@ -9,7 +9,7 @@
 
 namespace cpp_stable_diffusion_ov
 {
-    UNetLoopSplit::UNetLoopSplit(std::string model_path,
+    UNetLoopSplit::UNetLoopSplit(std::shared_ptr<ov::Model> model,
         std::string device_unet_positive_prompt,
         std::string device_unet_negative_prompt,
         size_t max_tok_len,
@@ -18,21 +18,8 @@ namespace cpp_stable_diffusion_ov
         ov::Core& core)
         : _device_unet_positive_prompt(device_unet_positive_prompt), _device_unet_negative_prompt(device_unet_negative_prompt)
     {
-        //Read the OpenVINO encoder IR (.xml/.bin) from disk, producing an ov::Model object.
-        auto model = core.read_model(model_path);
-
-        logBasicModelInfo(model);
-
         _sample_shape = ov::Shape{ 1, 4, img_height / 8, img_width / 8 };
         _encoder_hidden_states_shape = ov::Shape{ 1, max_tok_len, 768 };
-        std::map<size_t, ov::PartialShape> reshape_map;
-        reshape_map[0] = _sample_shape;
-        reshape_map[2] = _encoder_hidden_states_shape;
-        model->reshape(reshape_map);
-
-        //ov::preprocess::PrePostProcessor ppp(model);
-        //ppp.input("timestep").tensor().set_element_type(ov::element::f64);
-        //model = ppp.build();
 
         std::cout << "UNet model info:" << std::endl;
         logBasicModelInfo(model);
